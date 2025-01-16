@@ -18,6 +18,15 @@ spring:
         max-idle: 10
         min-idle: 1
         time-between-eviction-runs: 10s
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: 2841
+    password: 2841
+    listener:
+      simple:
+        acknowledge-mode: manual
+    virtual-host: /lab
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
 mybatis-plus:
@@ -25,3 +34,4 @@ mybatis-plus:
 logging:
   level:
     com.hmdp: debug
+

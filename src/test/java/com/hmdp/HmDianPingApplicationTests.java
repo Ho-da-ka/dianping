@@ -1,3 +1,4 @@
+
 package com.hmdp;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -21,7 +22,7 @@ class HmDianPingApplicationTests {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
+/*
     @Test
     public void test() {
         shopService.saveShopToRedis(1L, 60L);
@@ -35,5 +36,6 @@ class HmDianPingApplicationTests {
 //        BeanUtil.fillBean()
         System.out.println(shop);
     }
-
+*/
 }
+

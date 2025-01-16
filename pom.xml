@@ -72,7 +72,14 @@
             <artifactId>jsr250-api</artifactId>
             <version>1.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!--redisson-->
         <dependency>
             <groupId>org.redisson</groupId>
