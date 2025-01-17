@@ -13,9 +13,11 @@ import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -63,9 +65,10 @@ public class UserController {
      * @return 无
      */
     @PostMapping("/logout")
-    public Result logout() {
-        // TODO 实现登出功能
-        return Result.fail("功能未完成");
+    public Result logout(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        //  实现登出功能
+        return userService.logout(token);
     }
 
     @GetMapping("/me")
@@ -99,5 +102,22 @@ public class UserController {
         info.setUpdateTime(null);
         // 返回
         return Result.ok(info);
+    }
+
+    @PostMapping("/sign")
+    public Result sign() {
+        //  调用方法签到
+        return userService.sign();
+    }
+
+    /**
+     * 签到次数
+     *
+     * @return
+     */
+    @GetMapping("/sign/count")
+    public Result signCount() {
+        //  调用方法签到
+        return userService.signCount();
     }
 }

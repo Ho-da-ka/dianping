@@ -10,10 +10,11 @@ import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
-import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,10 @@ import javax.servlet.http.HttpSession;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +55,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public Result login(LoginFormDTO loginForm, HttpSession session) {
-//        generateToken();
         //1.校验手机号
         String phone = loginForm.getPhone();
         if (RegexUtils.isPhoneInvalid(phone)) {
@@ -84,6 +87,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok(token);
     }
 
+    @Override
+    public Result logout(String token) {
+        stringRedisTemplate.delete(LOGIN_USER_KEY + token);
+        return Result.ok();
+    }
+
+    /**
+     * 根据手机号创建用户
+     *
+     * @param phone
+     * @return
+     */
     private User createUserWithPhone(String phone) {
         User user = new User();
         user.setPhone(phone);
@@ -110,6 +125,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.debug("验证码：{}", code);
         return Result.ok();
     }
+
+    @Override
+    public Result sign() {
+        Long id = UserHolder.getUser().getId();
+        LocalDate now = LocalDate.now();
+        String key = USER_SIGN_KEY + id + ":" + now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        stringRedisTemplate.opsForValue().setBit(key, now.getDayOfMonth() - 1, true);
+        return Result.ok();
+    }
+
+    @Override
+    public Result signCount() {
+        Long id = UserHolder.getUser().getId();
+        String key = USER_SIGN_KEY + id + ":" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+        List<Long> result = stringRedisTemplate.opsForValue().bitField(
+                key,
+                BitFieldSubCommands.create()
+                        .get(BitFieldSubCommands.BitFieldType.unsigned(LocalDate.now().getDayOfMonth())).valueAt(0));
+        if (result == null || result.isEmpty()) {
+            return Result.ok(0);
+        }
+        Long num = result.get(0);
+        int count = 0;
+        if (num == null || num == 0) {
+            return Result.ok(0);
+        }
+        while ((num & 1) != 0) {
+            count++;
+            num >>>= 1;
+        }
+        return Result.ok(count);
+    }
+
 
     public void generateToken() {
         String[] phoneNumbers = {
